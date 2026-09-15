@@ -116,5 +116,50 @@ class TestParseCurrency(unittest.TestCase):
         self.assertEqual(rows[0]["raw"], "NA")
 
 
+class TestParseCurrencyRealDumpStrings(unittest.TestCase):
+    """50+ real strings sampled from the Coal India Limited slice
+    (aoc_tenders Contract Value, tenders_vps EMD) -- CLAUDE.md rule 6:
+    'test against 50 real strings pulled from the dump.' Sampled
+    2019-2025, Central/Eastern/Western/South Eastern/Northern/Mahanadi
+    Coalfields. None of these were rejected when sampled; this test
+    guards against a future change silently breaking that."""
+
+    REAL_CONTRACT_VALUES = [
+        "44653", "90173", "107097", "111510", "120709", "148979", "188136",
+        "195172", "254652", "406897", "413053", "436600", "487340", "657201",
+        "678733", "887242", "934500", "1529280", "1978270", "3020828",
+        "4592708", "4759604", "5402925", "5540100", "58787.6", "78791.9",
+        "516980.6", "148368.49", "148747.26", "1649321.4", "165095.16",
+        "184832.62", "190670.18", "201657.28", "204512.38", "218548.84",
+        "309836.82", "3306216.2", "430944.35", "462166.47", "766664.08",
+        "790820.65", "870279.22", "953983.55", "995879.87", "1157708.62",
+        "1236983.38", "1655316.04", "2006080.24", "2121213.55",
+    ]
+
+    REAL_EMD_VALUES = [
+        "₹ 1500", "₹ 8100", "₹ 8380", "₹ 8600", "₹ 8937",
+        "₹ 9800", "₹ 10000", "₹ 13840", "₹ 15900", "₹ 19000",
+        "₹ 19500", "₹ 21000", "₹ 21132", "₹ 28900", "₹ 35900",
+        "₹ 49966", "₹ 58600", "₹ 60000", "₹ 60500", "₹ 66000",
+        "₹ 70380", "₹ 71100", "₹ 75475", "₹ 80000", "₹ 89000",
+        "₹ 90000", "₹ 160000", "₹ 176000", "₹ 255000",
+        "₹ 330000", "₹ 383000", "₹ 420000", "₹ 635440",
+        "₹ 1037595", "₹ 1384000",
+    ]
+
+    def test_no_real_contract_values_rejected(self):
+        log = RejectLog()
+        failures = [s for s in self.REAL_CONTRACT_VALUES if parse_currency(s, log) is None]
+        self.assertEqual(failures, [])
+
+    def test_no_real_emd_values_rejected(self):
+        log = RejectLog()
+        failures = [s for s in self.REAL_EMD_VALUES if parse_currency(s, log) is None]
+        self.assertEqual(failures, [])
+
+    def test_real_emd_value_shape(self):
+        self.assertEqual(parse_currency("₹ 10000"), Decimal("10000"))
+
+
 if __name__ == "__main__":
     unittest.main()

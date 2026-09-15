@@ -65,38 +65,87 @@ appears (UI, deck, video) — CLAUDE.md rule 10.
 
 This is decided within the H+10 deadline the plan sets.
 
-## Slice decision
+## Slice decision — REVISED at start of Phase 2 (H6-H18)
 
-Target: one state, 5 financial years, 100k-300k award rows, good field
-coverage (Section 6/11).
+The Phase 1 slice decision below (Madhya Pradesh, state government) was
+**abandoned** once ETL design started and the award-side/notice-side join
+was actually tested. Keeping the full investigation here rather than
+quietly overwriting it, since it's exactly the kind of "coverage decides
+this, not preference" call the plan asks for at H+4 — it just took until
+early Phase 2 to surface the real constraint.
 
-State-level row counts (`portal_type='state'`, all years available):
-West Bengal 785,197; Maharashtra 537,695; Kerala 358,799; **Madhya
-Pradesh 248,689**; Haryana 162,327; Uttar Pradesh 151,213; Tamil Nadu
-139,936; Punjab 133,675; Odisha 116,148.
+### The join problem
 
-Per-year counts for 2021-2025 (chosen as the 5-year window — 2026 is the
-current, incomplete year):
+F2_SHORT_WINDOW, F9_INSTANT_AWARD, and F11_EMD_ANOMALY all need fields
+that only exist on the **notice side** (`tenders_vps.db`: bid window
+dates, bid opening date, EMD) joined to the **award side**
+(`aoc_tenders.db` / `aoc_details`: contract date, contract value).
+`aoc_tenders.ref_no` is blank on essentially every row, so the join has
+to go through `aoc_details.details_json["Tender Ref. No."]` (free text)
+or something better.
 
-| State | 2021 | 2022 | 2023 | 2024 | 2025 | Total |
-|---|---|---|---|---|---|---|
-| **Madhya Pradesh** | 31,120 | 36,971 | 47,774 | 34,829 | 21,585 | **172,279** |
-| Haryana | 22,566 | 20,857 | 34,516 | 27,943 | 24,842 | 130,724 |
-| Tamil Nadu | 2,521 | 7,681 | 23,038 | 35,156 | 45,898 | 114,294 |
-| Punjab | 24,692 | 7,688 | 16,938 | 15,689 | 22,059 | 87,066 |
-| Odisha | 8,588 | 4,180 | 24,561 | 15,340 | 20,761 | 73,430 |
+Free-text reference-number matching against Madhya Pradesh notices
+(normalised, case/whitespace-insensitive) matched **18/5,000 sampled
+award rows (0.4%)** — unusable. Checking `tenders_vps.tenders.portal_type`
+explains why: `state` portal_type has only 41,825 rows nationwide (vs.
+4.9M state-portal awards in `aoc_tenders`) — this mirror's notice-side
+crawl barely covers state government departments at all. `org` portal_type
+(3.91M rows) covers named organisations — mostly central PSUs and defence
+establishments — almost exclusively.
 
-**Chosen slice: Madhya Pradesh, 2021-2025.** 172,279 award rows, squarely
-inside the 100k-300k target, most consistent year-over-year distribution
-of the candidates (no single-year collapse the way Tamil Nadu or Punjab
-show), and **100% of those rows have a matching `aoc_details.details_json`
-row** (verified by join, not assumed).
+**A real (non-fuzzy) join key exists**, though: `tenders_vps.tenders.
+detail_url`'s final `A13h1`-delimited segment, base64-decoded, is exactly
+`aoc_tenders.tender_id` (verified: `MjAxN19NRVNfMTUzNDY1XzE=` decodes to
+`2017_MES_153465_1`, matching the `tender_id` format exactly).
+`tenders_vps.tenders.tender_id` itself is a different, unrelated internal
+scraper ID — not usable directly.
+
+Using this real key against **E-IN-C Branch, Military Engineer Services**
+(largest central org in both tables) still only matched 0-29% depending on
+year — because the notice-side crawl for MES is concentrated in
+2015-2018 and 2026, with almost nothing in between (checked directly: 1-3
+rows/year for 2019-2025). This is a scrape-coverage gap specific to that
+organisation/crawl window, not a formatting problem.
+
+**Central Coalfields Limited**, tested the same way, matched >98% for
+2019-2025 specifically (98.5-100% per year) after the 2013-2018 tail
+(where its own coverage is thin) was excluded. This suggested the
+join quality is real but organisation- and year-window-dependent, so the
+other five Coal India Limited subsidiaries were tested the same way:
+
+| Organisation | Matched | Total | Rate |
+|---|---|---|---|
+| Central Coalfields | 50,819 | 50,977 | 99.7% |
+| Eastern Coalfields | 24,585 | 24,811 | 99.1% |
+| Western Coalfields | 13,382 | 13,838 | 96.7% |
+| South Eastern Coalfields | 21,468 | 21,847 | 98.3% |
+| Northern Coalfields | 14,834 | 14,924 | 99.4% |
+| Mahanadi Coalfields | 13,617 | 13,954 | 97.6% |
+| **Total** | **138,705** | **140,351** | **98.8%** |
+
+### Final slice: Coal India Limited subsidiaries, 2019-2025
+
+Central Coalfields, Eastern Coalfields, Western Coalfields, South Eastern
+Coalfields, Northern Coalfields, and Mahanadi Coalfields Limited — six
+wholly-owned subsidiaries of Coal India Limited under the Ministry of
+Coal. **140,351 award rows**, inside the 100k-300k target, with **98.8%
+of rows joinable to real notice-side data** (bid dates, EMD) via the
+base64-decoded `tender_id` key. This isn't literally "one state or 2-3
+ministries" per Section 6's wording, but it's the same shape the plan
+asks for — a single coherent, bounded organisational family, chosen on
+verified coverage rather than preference.
+
+This means F2, F9, and F11 are computable for ~98.8% of the slice, not
+just the award-only flags (F1, F5, F12), which are unaffected by any of
+this (they only ever needed award-side data).
+
+**ETL implication:** the join key for loading `tender` rows from
+`tenders_vps` is `base64_decode(detail_url.split('A13h1')[-1])`, matched
+against `aoc_tenders.tender_id` — not any column literally named
+"tender_id" on the notice side, and not free-text reference number
+matching.
 
 ## Still open
 
-- `tenders_vps.db` (notice-side: EMD, tender fee, bid window dates) not
-  yet downloaded — queued next, sequential download->verify->extract->
-  delete per the agreed disk strategy.
-- Postgres schema not yet applied — blocked on a working `DATABASE_URL`
-  (Supabase's direct-connection host is IPv6-only; this sandbox has no
-  IPv6 route, so the pooler connection string is needed instead).
+- Postgres schema applied (Phase 1, confirmed). ETL to load this
+  slice into Postgres is Phase 2 work, not yet done as of this revision.
