@@ -1,0 +1,67 @@
+# Weights and thresholds for the six deterministic flags (MHASH26-BUILD-PLAN.md
+# Section 8). CLAUDE.md rule 4: this is the ONLY place these numbers may live —
+# never hardcode a threshold in SQL, a migration, or a frontend component.
+#
+# Initial weight values below are a starting point, not a claim of calibration;
+# they are deliberately shown on camera in the demo with the line: "our
+# thresholds are configurable by the audit body, because ₹50 lakh in a
+# municipal body is not ₹50 lakh in NHAI."
+#
+# score = sum(weight[code] * severity) over all flags present on an award.
+
+flags:
+  F1_SINGLE_BID:
+    weight: 1.0
+    # Basis: OCP red flag 1, GFR competition principle.
+    high_value_threshold_inr: 5000000   # ₹50L
+    severity_above_threshold: 1.0
+    severity_below_threshold: 0.7
+
+  F2_SHORT_WINDOW:
+    weight: 0.6
+    # Basis: GFR 2017 Rule 161 — 21 days minimum for an advertised tender
+    # enquiry (28 days if bids are invited from abroad).
+    required_days: 21
+    severity_at_or_below_days: 7      # >= this severity band -> 1.0
+    severity_floor_days: 20           # window this long -> 0.3
+    severity_ceiling: 1.0
+    severity_floor: 0.3
+
+  F5_THRESHOLD_BUNCHING:
+    weight: 0.8
+    # Basis: GFR Rule 162 (limited tender enquiry <= ₹50L), Rule 155
+    # (purchase committee ₹50k-₹5L), Rule 154 (without quotation <= ₹50k).
+    thresholds_inr:
+      - amount: 5000000
+        rule: "GFR Rule 162 - limited tender enquiry up to Rs 50 lakh"
+      - amount: 500000
+        rule: "GFR Rule 155 - purchase committee Rs 50,000 to Rs 5 lakh"
+      - amount: 50000
+        rule: "GFR Rule 154 - without quotation up to Rs 50,000"
+    tight_band_pct: 0.01              # within 1% below threshold -> 1.0
+    wide_band_pct: 0.05               # within 5% below threshold -> 0.6
+    severity_tight: 1.0
+    severity_wide: 0.6
+
+  F9_INSTANT_AWARD:
+    weight: 0.7
+    # Basis: OCP — decision period extremely short after bid opening.
+    severity_at_0_days: 1.0
+    severity_at_1_day: 0.6
+
+  F11_EMD_ANOMALY:
+    weight: 0.5
+    # Basis: GFR EMD norms. Top/bottom of the emd/contract_value ratio,
+    # computed within the organisation (not the whole slice).
+    percentile_top: 0.98
+    percentile_bottom: 0.02
+    severity_min: 0.5
+    severity_max: 0.9
+
+  F12_YEAR_END_RUSH:
+    weight: 0.4
+    # Basis: standard audit practice — awards clustered in the last two
+    # weeks of the fiscal year.
+    month: 3
+    day_from: 18
+    severity: 0.4
