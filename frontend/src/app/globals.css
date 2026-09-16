@@ -1,6 +1,23 @@
 @import "tailwindcss";
 
+/* This app is pinned to a light theme on purpose.
+ *
+ * Every screen is built in explicit light colours (bg-white, neutral-50
+ * panels, neutral-700 body text). The Next.js starter's
+ * prefers-color-scheme:dark block used to flip only the <body> background
+ * to near-black underneath those components, which left mid-grey text on a
+ * black ground -- illegible, and silently different depending on the
+ * presenter's OS setting.
+ *
+ * MHASH26-BUILD-PLAN.md Section 10 makes legibility at video resolution a
+ * non-negotiable, and the demo gets screen-recorded on someone's laptop
+ * (Section 11, H40-H48). A deterministic light render on every machine is
+ * worth more here than honouring the system theme. `color-scheme: light`
+ * also keeps form controls -- the date and select inputs in the filter bar
+ * -- from rendering dark-on-dark.
+ */
 :root {
+  color-scheme: light;
   --background: #ffffff;
   --foreground: #171717;
 }
@@ -12,15 +29,9 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Arial, sans-serif;
 }

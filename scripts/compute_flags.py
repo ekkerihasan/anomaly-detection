@@ -173,11 +173,20 @@ def compute_f11_emd_anomaly(cur, w):
             FROM award a JOIN tender t ON t.id = a.tender_id
             WHERE t.emd IS NOT NULL AND a.contract_value IS NOT NULL AND a.contract_value > 0
         ),
-        ranked AS (
-            SELECT *,
-                   PERCENT_RANK() OVER (PARTITION BY org_id ORDER BY ratio) AS pr,
-                   PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY ratio) OVER (PARTITION BY org_id) AS median_ratio
+        -- Postgres does not allow OVER on an ordered-set aggregate, so the
+        -- per-organisation median is computed as its own grouped CTE and
+        -- joined back, rather than as a window function over `ratios`.
+        medians AS (
+            SELECT org_id,
+                   PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY ratio) AS median_ratio
             FROM ratios
+            GROUP BY org_id
+        ),
+        ranked AS (
+            SELECT r.*, m.median_ratio,
+                   PERCENT_RANK() OVER (PARTITION BY r.org_id ORDER BY r.ratio) AS pr
+            FROM ratios r
+            JOIN medians m ON m.org_id = r.org_id
         )
         INSERT INTO flag (award_id, code, severity, evidence)
         SELECT award_id, 'F11_EMD_ANOMALY',

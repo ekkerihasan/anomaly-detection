@@ -7,6 +7,7 @@ import { Award } from "@/types/award";
 export const fakeAward: Award = {
   id: 1,
   organisation: "State Public Works Division (sample org)",
+  organisationId: 0,
   vendor: "M/S Sample Electricals Pvt Ltd",
   contractValue: 4975000,
   contractDate: "2024-03-27",
