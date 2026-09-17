@@ -17,7 +17,7 @@ and disclose that it is synthetic. That is what this is.
 
 ## Method
 
-- Host organisation: **Central Coalfields Limited** (the largest in the slice, so the
+- Host organisation: **Central Coalfields Limited||Kathara** (the largest in the slice, so the
   planted rows compete against a realistic population).
 - Planted awards: **13** — 5 demand-splitting, 8 bid-rotation.
 - The detection engine was **not modified and not told which rows were
@@ -28,9 +28,9 @@ and disclose that it is synthetic. That is what this is.
 
 ## Result
 
-- Awards carrying at least one flag in the slice: **3,665**
+- Awards carrying at least one flag in the slice: **131,061**
 - Planted awards detected: **13/13**
-- Worst-ranked planted award: **#14 of 3,665** (top 0.38%)
+- Worst-ranked planted award: **#19 of 131,061** (top 0.01%)
 
 | Review budget K | Planted found | Recall | Precision |
 |---:|---:|---:|---:|

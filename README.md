@@ -157,7 +157,19 @@ that rather than inventing a new plan.
 
 Done: schema, parsers + tests, ETL, six flags with evidence blobs,
 composite scoring and ranking, full API, all three screens, triage
-persistence, synthetic back-test harness.
+persistence, synthetic back-test harness — **and the real slice is now
+loaded and scored**: 138,512 awards / 131,048 with at least one flag,
+166,047 flag rows, scores ranging 0.16-2.45. The synthetic back-test
+(`docs/backtest-report.md`) has been re-run against this real
+population: 13/13 planted awards detected, worst-ranked at #19 of
+131,061 (top 0.01%).
 
-Not done: real-slice ETL run on this machine (needs the dumps), deploy,
-deck, video.
+Not done: deploy, deck, video.
+
+Note on F2_SHORT_WINDOW: ~92% of awards in this slice carry this flag —
+checked against raw dates (not a parsing bug): the bulk of "Open/
+Advertised" e-tenders in this corpus run ~10-11 day bid windows against
+GFR Rule 161's 21-day minimum. This looks like a real, sector-wide
+finding rather than noise; the severity gradient (1.0 at <=7 days down
+to 0.3 at 20 days) still differentiates within that population, and the
+composite score pulls in the other five flags on top of it.
