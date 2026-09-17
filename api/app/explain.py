@@ -19,7 +19,10 @@ must be preserved -- they are part of the product's credibility argument.
 RULE_CITATIONS = {
     "F1_SINGLE_BID": "GFR competition principle, OCP red flag 1",
     "F2_SHORT_WINDOW": "GFR 2017 Rule 161",
-    "F5_THRESHOLD_BUNCHING": "GFR 2017 Rule 162",
+    # Fallback only: F5 fires at three thresholds under three different
+    # rules (162 / 155 / 154), so the real citation is the `rule` string
+    # compute_flags.py copies from config/weights.yaml into evidence.
+    "F5_THRESHOLD_BUNCHING": "GFR 2017 Rules 154, 155, 162",
     "F9_INSTANT_AWARD": "OCP red flag, decision period",
     "F11_EMD_ANOMALY": "GFR EMD norms",
     "F12_YEAR_END_RUSH": "Standard audit practice, year-end clustering",
@@ -142,6 +145,12 @@ _BUILDERS = {
     "F12_YEAR_END_RUSH": _f12,
 }
 
+# Flags whose citation depends on which rule actually fired, taken from
+# this evidence field rather than the static RULE_CITATIONS entry.
+_CITATION_FROM_EVIDENCE = {
+    "F5_THRESHOLD_BUNCHING": "rule",
+}
+
 
 def explain(code, evidence):
     """Returns (sentence, rule_citation) for one flag.
@@ -152,6 +161,9 @@ def explain(code, evidence):
     evidence = evidence or {}
     builder = _BUILDERS.get(code)
     citation = RULE_CITATIONS.get(code, "")
+    evidence_field = _CITATION_FROM_EVIDENCE.get(code)
+    if evidence_field and evidence.get(evidence_field):
+        citation = evidence[evidence_field]
     if builder is None:
         return (f"Flag {code} was raised on this award.", citation)
     try:

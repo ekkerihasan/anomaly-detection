@@ -30,12 +30,12 @@ export default function FlagRow({ flag }: { flag: Flag }) {
         {Object.entries(flag.evidence).map(([key, value]) => (
           <div key={key} className="flex flex-col">
             <dt className="text-neutral-500 font-mono text-xs">{key}</dt>
-            <dd className="font-medium">{String(value)}</dd>
+            <dd className="font-medium tabular-nums">{value === null ? "—" : String(value)}</dd>
           </div>
         ))}
       </dl>
 
-      <p className="text-xs text-neutral-500 italic">{flag.ruleCitation}</p>
+      <p className="text-sm text-neutral-600 italic">Basis: {flag.ruleCitation}</p>
     </div>
   );
 }

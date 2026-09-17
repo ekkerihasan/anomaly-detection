@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { fetchOrganisationSummary } from "@/lib/api";
-import { formatInr, flagLabel } from "@/lib/format";
+import { formatInr, flagLabel, formatOrganisation, displayVendor } from "@/lib/format";
 import SyntheticBanner from "@/components/SyntheticBanner";
 
 // Organisation summary (MHASH26-BUILD-PLAN.md Section 10, screen 3).
@@ -64,7 +64,7 @@ export default async function OrganisationPage({
         </nav>
 
         <header className="flex flex-col gap-1 border-b border-neutral-200 pb-4">
-          <h1 className="text-2xl font-bold">{org.name}</h1>
+          <h1 className="text-2xl font-bold">{formatOrganisation(org.name)}</h1>
           <p className="text-neutral-600 text-sm">
             {org.awards.toLocaleString("en-IN")} awards ·{" "}
             {formatInr(org.totalValue)} total contracted value
@@ -142,7 +142,7 @@ export default async function OrganisationPage({
                 <tbody>
                   {org.topVendors.map((v) => (
                     <tr key={v.vendor} className="border-t border-neutral-100">
-                      <td className="px-3 py-2">{v.vendor}</td>
+                      <td className="px-3 py-2">{displayVendor(v.vendor)}</td>
                       <td className="px-3 py-2 text-right tabular-nums">{v.awards}</td>
                       <td className="px-3 py-2 text-right tabular-nums">
                         {formatInr(v.totalValue)}

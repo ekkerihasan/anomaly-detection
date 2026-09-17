@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Award } from "@/types/award";
-import { formatInr, formatDate } from "@/lib/format";
+import { formatInr, formatDate, formatOrganisation, displayVendor } from "@/lib/format";
 import FlagRow from "./FlagRow";
 import TriageControl from "./TriageControl";
 
@@ -33,29 +33,33 @@ export default function DetailCard({
                 href={`/organisations/${award.organisationId}`}
                 className="hover:underline"
               >
-                {award.organisation}
+                {formatOrganisation(award.organisation)}
               </Link>
             </h1>
-            <p className="text-neutral-600">{award.vendor}</p>
+            <p className="text-neutral-600">{displayVendor(award.vendor)}</p>
             {award.title && (
               <p className="text-sm text-neutral-500 mt-1">{award.title}</p>
             )}
           </div>
-          <a
-            href={award.detailUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="text-sm text-blue-700 underline shrink-0"
-          >
-            Original CPPP page
-          </a>
+          {award.detailUrl && (
+            <a
+              href={award.detailUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="text-sm text-blue-700 underline shrink-0"
+            >
+              Original CPPP page
+            </a>
+          )}
         </div>
         <div className="flex flex-wrap gap-x-8 gap-y-1 text-sm text-neutral-700">
           <span>
-            <strong>Value:</strong> {formatInr(award.contractValue)}
+            <strong>Value:</strong>{" "}
+            {award.contractValue !== null ? formatInr(award.contractValue) : "not published"}
           </span>
           <span>
-            <strong>Date:</strong> {formatDate(award.contractDate)}
+            <strong>Date:</strong>{" "}
+            {award.contractDate ? formatDate(award.contractDate) : "not published"}
           </span>
           {award.refNo && (
             <span>
@@ -74,8 +78,14 @@ export default function DetailCard({
       <section className="flex items-baseline gap-4 bg-neutral-900 text-white rounded-lg p-4">
         <span className="text-4xl font-bold tabular-nums">{award.score.toFixed(2)}</span>
         <span className="text-neutral-300">
-          risk score &middot; rank #{award.rank} of{" "}
-          {award.totalInSlice.toLocaleString("en-IN")} flagged awards in this slice
+          {award.rank !== null ? (
+            <>
+              risk score &middot; rank #{award.rank} of{" "}
+              {award.totalInSlice.toLocaleString("en-IN")} flagged awards in this slice
+            </>
+          ) : (
+            <>no flags raised &middot; not in the review queue</>
+          )}
         </span>
       </section>
 

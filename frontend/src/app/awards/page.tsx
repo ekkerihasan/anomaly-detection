@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { fetchAwards, fetchOrganisations } from "@/lib/api";
-import { formatInr, formatDate, flagLabel } from "@/lib/format";
+import { formatInr, formatDate, flagLabel, formatOrganisation, displayVendor } from "@/lib/format";
 import AwardFilters from "@/components/AwardFilters";
 import SyntheticBanner from "@/components/SyntheticBanner";
 import { ReviewStatus } from "@/types/award";
@@ -87,8 +87,9 @@ export default async function AwardsPage({
           <h1 className="text-2xl font-bold">Review queue</h1>
           <p className="text-neutral-600 text-sm">
             {list.total.toLocaleString("en-IN")} awards carry at least one flag,
-            ranked by composite risk score. Awards with no flags are not listed
-            — this is a queue, not a scoreboard.
+            ranked by composite risk score. Read from the top: the rank, not
+            the presence of a flag, is the signal. Awards with no flags are not
+            listed.
           </p>
         </header>
 
@@ -142,10 +143,10 @@ export default async function AwardsPage({
                         href={`/awards/${a.id}`}
                         className="font-medium text-blue-800 hover:underline"
                       >
-                        {a.organisation}
+                        {formatOrganisation(a.organisation)}
                       </Link>
                     </td>
-                    <td className="px-3 py-2 text-neutral-700">{a.vendor}</td>
+                    <td className="px-3 py-2 text-neutral-700">{displayVendor(a.vendor)}</td>
                     <td className="px-3 py-2 text-right tabular-nums">
                       {a.contractValue !== null ? formatInr(a.contractValue) : "—"}
                     </td>

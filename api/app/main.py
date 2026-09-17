@@ -363,6 +363,14 @@ def organisation_summary(org_id: int):
     entity-resolution result -- see the `caveat` field, which the UI renders
     verbatim (CLAUDE.md rule 7).
     """
+    # The late-March window must match F12_YEAR_END_RUSH exactly, so it is
+    # read from config/weights.yaml (CLAUDE.md rule 4), and the even-spread
+    # baseline uses the same arithmetic as scripts/compute_flags.py.
+    f12 = get_weights()["flags"]["F12_YEAR_END_RUSH"]
+    rush_month, rush_day_from = f12["month"], f12["day_from"]
+    days_in_month = 31 if rush_month in (1, 3, 5, 7, 8, 10, 12) else 30
+    rush_baseline = (days_in_month - rush_day_from + 1) / 365.0
+
     with get_cursor() as cur:
         cur.execute("SELECT id, name FROM organisation WHERE id = %(org_id)s",
                     {"org_id": org_id})
@@ -375,8 +383,8 @@ def organisation_summary(org_id: int):
             SELECT count(*) AS awards,
                    count(*) FILTER (WHERE a.bids_received = 1) AS single_bid,
                    count(*) FILTER (WHERE a.bids_received IS NOT NULL) AS with_bid_data,
-                   count(*) FILTER (WHERE EXTRACT(MONTH FROM a.contract_date) = 3
-                                      AND EXTRACT(DAY FROM a.contract_date) >= 18)
+                   count(*) FILTER (WHERE EXTRACT(MONTH FROM a.contract_date) = %(rush_month)s
+                                      AND EXTRACT(DAY FROM a.contract_date) >= %(rush_day_from)s)
                        AS late_march,
                    count(*) FILTER (WHERE a.contract_date IS NOT NULL) AS with_date,
                    COALESCE(sum(a.contract_value), 0) AS total_value,
@@ -387,7 +395,7 @@ def organisation_summary(org_id: int):
             JOIN tender t ON t.id = a.tender_id
             WHERE t.org_id = %(org_id)s
             """,
-            {"org_id": org_id},
+            {"org_id": org_id, "rush_month": rush_month, "rush_day_from": rush_day_from},
         )
         stats = cur.fetchone()
 
@@ -435,8 +443,8 @@ def organisation_summary(org_id: int):
         "singleBidCount": stats["single_bid"],
         "lateMarchRate": (stats["late_march"] / with_date) if with_date else None,
         "lateMarchCount": stats["late_march"],
-        # If awards were spread evenly, the 18-31 March window is 14/365 of the year.
-        "lateMarchBaseline": 14 / 365,
+        # Share of the year the rush window covers if awards were spread evenly.
+        "lateMarchBaseline": rush_baseline,
         "totalValue": total_value,
         "medianValue": float(stats["median_value"]) if stats["median_value"] is not None else None,
         "maxValue": float(stats["max_value"]) if stats["max_value"] is not None else None,

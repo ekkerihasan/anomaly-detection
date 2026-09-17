@@ -47,7 +47,7 @@ export const fakeAward: Award = {
       },
       sentence:
         "The contract value sits 0.5% below the Rs 50 lakh limited-tender-enquiry threshold, just inside the band that avoids the next level of procedural scrutiny.",
-      ruleCitation: "GFR 2017 Rule 162",
+      ruleCitation: "GFR Rule 162 - limited tender enquiry up to Rs 50 lakh",
     },
     {
       code: "F11_EMD_ANOMALY",

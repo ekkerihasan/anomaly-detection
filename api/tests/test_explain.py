@@ -46,7 +46,8 @@ def test_every_flag_has_a_template_and_a_citation(code):
     sentence, citation = explain(code, REAL_EVIDENCE[code])
     assert sentence and sentence[0].isupper(), f"{code}: sentence not a sentence"
     assert sentence.rstrip().endswith("."), f"{code}: sentence not terminated"
-    assert citation == RULE_CITATIONS[code]
+    expected = REAL_EVIDENCE[code].get("rule") or RULE_CITATIONS[code]
+    assert citation == expected
 
 
 @pytest.mark.parametrize("code", ALL_CODES)
@@ -99,6 +100,20 @@ def test_f5_renders_threshold_in_lakh_not_raw_rupees():
     sentence, _ = explain("F5_THRESHOLD_BUNCHING", REAL_EVIDENCE["F5_THRESHOLD_BUNCHING"])
     assert "lakh" in sentence, "Indian auditors read lakh/crore, not 5000000"
     assert "3.78%" in sentence
+
+
+@pytest.mark.parametrize("threshold, rule, rule_no", [
+    (500000, "GFR Rule 155 - purchase committee Rs 50,000 to Rs 5 lakh", "155"),
+    (50000, "GFR Rule 154 - without quotation up to Rs 50,000", "154"),
+])
+def test_f5_cites_the_rule_for_the_threshold_that_fired(threshold, rule, rule_no):
+    """F5 spans three GFR rules; citing Rule 162 under a Rs 50,000 threshold
+    would put a wrong legal reference on the explanation card."""
+    evidence = {"contract_value": threshold * 0.99, "threshold": threshold,
+                "gap_pct": 0.01, "rule": rule}
+    _, citation = explain("F5_THRESHOLD_BUNCHING", evidence)
+    assert rule_no in citation
+    assert "162" not in citation
 
 
 def test_f9_zero_days_reads_as_same_day():

@@ -40,15 +40,15 @@ export interface Award {
   id: number;
   organisation: string;
   organisationId: number;
-  vendor: string;
+  vendor: string | null;
   title?: string | null;
   refNo?: string | null;
   tenderType?: string | null;
-  contractValue: number;
-  contractDate: string; // ISO date
-  detailUrl: string;
+  contractValue: number | null;
+  contractDate: string | null; // ISO date
+  detailUrl: string | null;
   score: number;
-  rank: number;
+  rank: number | null; // null when the award carries no flags
   totalInSlice: number;
   flags: Flag[];
   review: {
@@ -62,7 +62,7 @@ export interface AwardListItem {
   id: number;
   organisation: string;
   organisationId: number;
-  vendor: string;
+  vendor: string | null;
   contractValue: number | null;
   contractDate: string | null;
   detailUrl: string;

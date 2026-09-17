@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { OrganisationListItem, ALL_FLAG_CODES, ALL_REVIEW_STATUSES } from "@/types/award";
-import { flagLabel } from "@/lib/format";
+import { flagLabel, formatOrganisation } from "@/lib/format";
 
 /**
  * Filter bar for the ranked list (plan Section 10, screen 1).
@@ -31,7 +31,7 @@ export default function AwardFilters({
           <option value="">All</option>
           {organisations.map((o) => (
             <option key={o.id} value={o.id}>
-              {o.name}
+              {formatOrganisation(o.name)}
             </option>
           ))}
         </select>
