@@ -1,0 +1,26 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# The API needs the config from the repo root
+# Copy requirements first for caching
+COPY api/requirements.txt ./api/
+RUN pip install --no-cache-dir -r api/requirements.txt
+
+# Copy the config directory (for weights.yaml)
+COPY config/ ./config/
+
+# Copy the API code
+COPY api/ ./api/
+
+# Copy the .env if it exists (or it can be supplied via docker compose)
+# We don't strictly need to copy .env because we can set vars in compose,
+# but the app might expect the file to exist or not.
+
+# Set PYTHONPATH so python can find the `app` module inside `api`
+ENV PYTHONPATH=/app/api
+WORKDIR /app/api
+
+EXPOSE 8000
+
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

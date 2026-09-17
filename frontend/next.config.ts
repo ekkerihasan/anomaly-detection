@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  output: "standalone",
   // Without this, opening the dev server at http://127.0.0.1:3000 instead of
   // http://localhost:3000 silently blocks /_next/hmr and the client bundle,
   // so "use client" components render but never hydrate -- the triage buttons
