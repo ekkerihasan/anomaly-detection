@@ -1,14 +1,8 @@
 import { fetchDatasetMeta } from "@/lib/api";
 
 /**
- * Persistent warning shown whenever the loaded dataset is the dev fixture
- * rather than a real slice.
- *
- * MHASH26-BUILD-PLAN.md Section 9 and CLAUDE.md rule 10 both require that
- * anything synthetic is disclosed *on screen*, not just in a README. The
- * state comes from /meta/dataset, which derives it from the data itself --
- * so this cannot be left on by accident after a real load, and cannot be
- * forgotten before a screenshot.
+ * Persistent disclosure banner shown whenever the loaded dataset is the dev fixture
+ * rather than a live/production slice.
  */
 export default async function SyntheticBanner() {
   const meta = await fetchDatasetMeta();
@@ -17,10 +11,10 @@ export default async function SyntheticBanner() {
   return (
     <div
       role="status"
-      className="bg-amber-400 text-amber-950 border-b-2 border-amber-600 px-4 py-2 text-center text-sm font-semibold tracking-wide"
+      className="bg-beige-alt text-charcoal border-b-[2.5px] border-charcoal px-4 py-2.5 text-center text-xs sm:text-sm font-bold tracking-wide font-mono uppercase flex items-center justify-center gap-2"
     >
-      SYNTHETIC DEV FIXTURE — generated test data, not real procurement
-      records. Nothing shown here is a finding.
+      <span className="text-orange font-bold text-base">⚠</span>
+      <span>SYNTHETIC DEV FIXTURE — generated test data, not real procurement records. Nothing shown here is a finding.</span>
     </div>
   );
 }

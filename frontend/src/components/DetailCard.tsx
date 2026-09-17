@@ -4,11 +4,6 @@ import { formatInr, formatDate, formatOrganisation, displayVendor } from "@/lib/
 import FlagRow from "./FlagRow";
 import TriageControl from "./TriageControl";
 
-// Detail / explanation card (MHASH26-BUILD-PLAN.md Section 10, screen 2).
-// The highest-value component in the build: every sentence below is built
-// server-side from the flag's `evidence` blob, and the raw numbers are shown
-// next to the prose so an auditor can check the claim rather than trust it.
-
 export default function DetailCard({
   award,
   readOnly = false,
@@ -18,86 +13,138 @@ export default function DetailCard({
   readOnly?: boolean;
 }) {
   return (
-    <div className="max-w-3xl mx-auto flex flex-col gap-6 p-6">
-      <nav className="text-sm">
-        <Link href="/awards" className="text-blue-800 hover:underline">
-          ← Back to review queue
+    <div className="max-w-4xl mx-auto w-full flex flex-col gap-6 p-5 md:p-8">
+      {/* ── Breadcrumb / Back ── */}
+      <nav className="flex items-center justify-between">
+        <Link
+          href="/awards"
+          className="neo-btn-ghost text-xs py-2 px-3.5"
+        >
+          ← Back to Review Queue
         </Link>
+        <span className="neo-badge neo-badge-dark text-xs">
+          AWARD ID #{award.id}
+        </span>
       </nav>
 
-      <header className="flex flex-col gap-2 border-b border-neutral-200 pb-4">
-        <div className="flex items-start justify-between gap-4">
-          <div className="min-w-0">
-            <h1 className="text-2xl font-bold">
+      {/* ── Tender Header Summary Card ── */}
+      <header className="neo-card p-6 flex flex-col gap-4 bg-white">
+        <div className="flex items-start justify-between gap-4 flex-wrap">
+          <div className="min-w-0 max-w-2xl">
+            <span className="text-xs font-mono font-bold uppercase text-concrete tracking-wide">
+              Procuring Entity
+            </span>
+            <h1 className="text-2xl md:text-3xl font-bold text-charcoal leading-tight">
               <Link
                 href={`/organisations/${award.organisationId}`}
-                className="hover:underline"
+                className="hover:text-orange transition-colors"
               >
                 {formatOrganisation(award.organisation)}
               </Link>
             </h1>
-            <p className="text-neutral-600">{displayVendor(award.vendor)}</p>
+            <p className="text-base text-concrete font-medium mt-1">
+              Vendor: <strong className="text-charcoal">{displayVendor(award.vendor)}</strong>
+            </p>
             {award.title && (
-              <p className="text-sm text-neutral-500 mt-1">{award.title}</p>
+              <p className="text-sm text-charcoal-light mt-2 p-3 bg-beige-alt rounded-lg border border-charcoal/10">
+                {award.title}
+              </p>
             )}
           </div>
+
           {award.detailUrl && (
             <a
               href={award.detailUrl}
               target="_blank"
               rel="noreferrer"
-              className="text-sm text-blue-700 underline shrink-0"
+              className="neo-btn-ghost text-xs py-2 px-3 shrink-0"
             >
-              Original CPPP page
+              <span>Original CPPP Page</span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                <polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" />
+              </svg>
             </a>
           )}
         </div>
-        <div className="flex flex-wrap gap-x-8 gap-y-1 text-sm text-neutral-700">
-          <span>
-            <strong>Value:</strong>{" "}
-            {award.contractValue !== null ? formatInr(award.contractValue) : "not published"}
-          </span>
-          <span>
-            <strong>Date:</strong>{" "}
-            {award.contractDate ? formatDate(award.contractDate) : "not published"}
-          </span>
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-3 border-t-[1.5px] border-charcoal/10">
+          <div className="flex flex-col">
+            <span className="text-xs font-mono uppercase text-concrete font-bold">Contract Value</span>
+            <span className="font-mono font-bold text-base text-charcoal">
+              {award.contractValue !== null ? formatInr(award.contractValue) : "Not published"}
+            </span>
+          </div>
+
+          <div className="flex flex-col">
+            <span className="text-xs font-mono uppercase text-concrete font-bold">Award Date</span>
+            <span className="font-mono font-bold text-sm text-charcoal">
+              {award.contractDate ? formatDate(award.contractDate) : "Not published"}
+            </span>
+          </div>
+
           {award.refNo && (
-            <span>
-              <strong>Ref:</strong>{" "}
-              <span className="font-mono text-xs">{award.refNo}</span>
-            </span>
+            <div className="flex flex-col">
+              <span className="text-xs font-mono uppercase text-concrete font-bold">Tender Ref</span>
+              <span className="font-mono text-xs text-charcoal truncate" title={award.refNo}>
+                {award.refNo}
+              </span>
+            </div>
           )}
+
           {award.tenderType && (
-            <span>
-              <strong>Type:</strong> {award.tenderType}
-            </span>
+            <div className="flex flex-col">
+              <span className="text-xs font-mono uppercase text-concrete font-bold">Procurement Type</span>
+              <span className="font-semibold text-sm text-charcoal">
+                {award.tenderType}
+              </span>
+            </div>
           )}
         </div>
       </header>
 
-      <section className="flex items-baseline gap-4 bg-neutral-900 text-white rounded-lg p-4">
-        <span className="text-4xl font-bold tabular-nums">{award.score.toFixed(2)}</span>
-        <span className="text-neutral-300">
-          {award.rank !== null ? (
-            <>
-              risk score &middot; rank #{award.rank} of{" "}
-              {award.totalInSlice.toLocaleString("en-IN")} flagged awards in this slice
-            </>
-          ) : (
-            <>no flags raised &middot; not in the review queue</>
-          )}
-        </span>
+      {/* ── Composite Risk Score Highlight ── */}
+      <section className="neo-card p-6 bg-charcoal text-beige flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <span className="text-5xl font-bold font-mono text-orange tabular-nums">
+            {award.score.toFixed(2)}
+          </span>
+          <div className="flex flex-col">
+            <span className="font-bold text-base text-white">Composite Deviation Score</span>
+            <span className="text-xs font-mono text-concrete-light">
+              {award.rank !== null ? (
+                <>Rank #{award.rank} of {award.totalInSlice.toLocaleString("en-IN")} flagged awards in slice</>
+              ) : (
+                <>No statutory flags detected</>
+              )}
+            </span>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <span className="neo-badge neo-badge-orange text-xs">
+            {award.flags.length} Flag{award.flags.length === 1 ? "" : "s"} Triggered
+          </span>
+        </div>
       </section>
 
-      <section className="flex flex-col gap-3">
-        <h2 className="text-lg font-semibold">
-          {award.flags.length} flag{award.flags.length === 1 ? "" : "s"} raised
-        </h2>
+      {/* ── Statutory Flags Breakdown ── */}
+      <section className="flex flex-col gap-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-bold text-charcoal">
+            Statutory Rule Findings ({award.flags.length})
+          </h2>
+          <span className="text-xs font-mono text-concrete">
+            Deterministic Evaluation · GFR 2017 & CVC Rules
+          </span>
+        </div>
+
         {award.flags.map((flag) => (
           <FlagRow key={flag.code} flag={flag} />
         ))}
       </section>
 
+      {/* ── Triage Actions ── */}
       <TriageControl
         awardId={award.id}
         initialStatus={award.review.status}
@@ -105,12 +152,12 @@ export default function DetailCard({
         readOnly={readOnly}
       />
 
-      <p className="text-xs text-neutral-500 leading-relaxed border-t border-neutral-200 pt-4">
-        This score ranks deviation from normal procurement behaviour within the
-        loaded slice. It is not a finding of wrongdoing, and it is not a
-        national percentile. No language model was involved in computing any
-        flag, severity or score — every number above came from a deterministic
-        SQL rule over published CPPP fields.
+      {/* ── Legal & Audit Disclaimer ── */}
+      <p className="text-xs text-concrete leading-relaxed font-mono p-4 bg-beige-alt rounded-xl border border-charcoal/10">
+        Note for Reviewing Auditors: This composite score ranks deviation from standard
+        procurement behavior within the loaded dataset slice. It is an algorithmic audit prioritization tool,
+        not a judicial determination of corruption. Zero language models were used in computing any score;
+        every finding is derived via deterministic SQL rules over published CPPP filings.
       </p>
     </div>
   );

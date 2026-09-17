@@ -4,10 +4,6 @@ import { fetchOrganisationSummary } from "@/lib/api";
 import { formatInr, flagLabel, formatOrganisation, displayVendor } from "@/lib/format";
 import SyntheticBanner from "@/components/SyntheticBanner";
 
-// Organisation summary (MHASH26-BUILD-PLAN.md Section 10, screen 3).
-// Makes the point that the engine works at aggregate level too, not just
-// award by award.
-
 function pct(x: number | null, places = 1): string {
   if (x === null || x === undefined) return "—";
   return `${(x * 100).toFixed(places)}%`;
@@ -25,16 +21,16 @@ function Stat({
   emphasis?: boolean;
 }) {
   return (
-    <div className="border border-neutral-200 rounded-lg p-4 flex flex-col gap-1">
-      <span className="text-xs uppercase tracking-wide text-neutral-500">{label}</span>
+    <div className={`neo-card p-4 flex flex-col gap-1 bg-white ${emphasis ? "border-orange" : ""}`}>
+      <span className="text-xs font-mono uppercase tracking-wide text-concrete font-bold">{label}</span>
       <span
-        className={`text-2xl font-bold tabular-nums ${
-          emphasis ? "text-red-700" : "text-neutral-900"
+        className={`text-2xl font-bold font-mono tabular-nums ${
+          emphasis ? "text-orange" : "text-charcoal"
         }`}
       >
         {value}
       </span>
-      {sub && <span className="text-xs text-neutral-500">{sub}</span>}
+      {sub && <span className="text-xs text-concrete font-mono">{sub}</span>}
     </div>
   );
 }
@@ -47,7 +43,7 @@ export default async function OrganisationPage({
 
   if (!org) notFound();
 
-  // March clustering is only interesting relative to an even spread.
+  // March clustering relative to an even spread
   const marchRatio =
     org.lateMarchRate !== null && org.lateMarchBaseline > 0
       ? org.lateMarchRate / org.lateMarchBaseline
@@ -56,26 +52,32 @@ export default async function OrganisationPage({
   return (
     <>
       <SyntheticBanner />
-      <main className="max-w-5xl mx-auto w-full flex flex-col gap-6 p-6">
-        <nav className="text-sm">
-          <Link href="/awards" className="text-blue-800 hover:underline">
-            ← Back to review queue
+      <main className="max-w-5xl mx-auto w-full flex flex-col gap-6 p-5 md:p-8">
+        <nav className="flex items-center justify-between">
+          <Link href="/awards" className="neo-btn-ghost text-xs py-2 px-3.5">
+            ← Back to Review Queue
           </Link>
+          <span className="neo-badge neo-badge-dark text-xs">
+            ORGANISATION PROFILE
+          </span>
         </nav>
 
-        <header className="flex flex-col gap-1 border-b border-neutral-200 pb-4">
-          <h1 className="text-2xl font-bold">{formatOrganisation(org.name)}</h1>
-          <p className="text-neutral-600 text-sm">
-            {org.awards.toLocaleString("en-IN")} awards ·{" "}
-            {formatInr(org.totalValue)} total contracted value
+        <header className="neo-card p-6 flex flex-col gap-2 bg-white">
+          <span className="text-xs font-mono font-bold uppercase text-concrete tracking-wide">
+            Public Procurement Entity
+          </span>
+          <h1 className="text-2xl md:text-3xl font-bold text-charcoal">{formatOrganisation(org.name)}</h1>
+          <p className="text-concrete text-sm font-mono">
+            {org.awards.toLocaleString("en-IN")} awards analyzed ·{" "}
+            {formatInr(org.totalValue)} total contracted volume
           </p>
         </header>
 
-        <section className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <Stat
             label="Single-bid rate"
             value={pct(org.singleBidRate)}
-            sub={`${org.singleBidCount.toLocaleString("en-IN")} awards with one bid`}
+            sub={`${org.singleBidCount.toLocaleString("en-IN")} awards with 1 bid`}
             emphasis={(org.singleBidRate ?? 0) > 0.2}
           />
           <Stat
@@ -83,7 +85,7 @@ export default async function OrganisationPage({
             value={pct(org.lateMarchRate)}
             sub={
               marchRatio
-                ? `${marchRatio.toFixed(1)}× the ${pct(org.lateMarchBaseline)} even-spread baseline`
+                ? `${marchRatio.toFixed(1)}× the ${pct(org.lateMarchBaseline)} baseline`
                 : undefined
             }
             emphasis={(marchRatio ?? 0) > 2}
@@ -91,7 +93,7 @@ export default async function OrganisationPage({
           <Stat
             label="Median award"
             value={org.medianValue !== null ? formatInr(org.medianValue) : "—"}
-            sub={org.maxValue !== null ? `largest ${formatInr(org.maxValue)}` : undefined}
+            sub={org.maxValue !== null ? `Max ${formatInr(org.maxValue)}` : undefined}
           />
           <Stat
             label="Top vendor share"
@@ -101,21 +103,22 @@ export default async function OrganisationPage({
         </section>
 
         <section className="flex flex-col gap-3">
-          <h2 className="text-lg font-semibold">Flags raised across this organisation</h2>
+          <h2 className="text-lg font-bold text-charcoal">Statutory Flags Triggered in this Entity</h2>
           {Object.keys(org.flagCounts).length === 0 ? (
-            <p className="text-sm text-neutral-500 border border-dashed border-neutral-300 rounded-lg p-6 text-center">
-              No flags raised for this organisation.
+            <p className="text-sm text-concrete neo-card p-6 text-center bg-white">
+              No statutory red flags raised for this organisation.
             </p>
           ) : (
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2.5">
               {Object.entries(org.flagCounts).map(([code, n]) => (
                 <Link
                   key={code}
                   href={`/awards?organisation_id=${org.id}&flag_code=${code}`}
-                  className="border border-neutral-300 rounded-lg px-3 py-2 text-sm hover:bg-neutral-50 flex items-center gap-2"
+                  className="neo-card-subtle px-4 py-2.5 text-sm hover:border-orange flex items-center gap-2.5 transition-all bg-white"
                 >
-                  <span className="font-medium">{flagLabel(code)}</span>
-                  <span className="tabular-nums text-neutral-500">
+                  <span className="neo-badge neo-badge-dark text-xs">{code}</span>
+                  <span className="font-bold text-charcoal">{flagLabel(code)}</span>
+                  <span className="neo-badge neo-badge-warm text-xs font-mono">
                     {n.toLocaleString("en-IN")}
                   </span>
                 </Link>
@@ -125,29 +128,34 @@ export default async function OrganisationPage({
         </section>
 
         <section className="flex flex-col gap-3">
-          <h2 className="text-lg font-semibold">Award concentration by vendor</h2>
+          <h2 className="text-lg font-bold text-charcoal">Vendor Concentration Analysis</h2>
           {org.topVendors.length === 0 ? (
-            <p className="text-sm text-neutral-500">No vendor data.</p>
+            <p className="text-sm text-concrete neo-card p-6 text-center bg-white">No vendor distribution data available.</p>
           ) : (
-            <div className="overflow-x-auto border border-neutral-200 rounded-lg">
+            <div className="neo-table-wrap overflow-x-auto">
               <table className="w-full text-sm">
-                <thead className="bg-neutral-50 text-left text-xs uppercase tracking-wide text-neutral-500">
+                <thead className="bg-charcoal text-beige text-left text-xs uppercase tracking-wider font-mono">
                   <tr>
-                    <th className="px-3 py-2 font-medium">Vendor (normalised exact name)</th>
-                    <th className="px-3 py-2 font-medium text-right">Awards</th>
-                    <th className="px-3 py-2 font-medium text-right">Total value</th>
-                    <th className="px-3 py-2 font-medium text-right">Share</th>
+                    <th className="px-4 py-3 font-bold">Vendor (Exact Normalised Identity)</th>
+                    <th className="px-4 py-3 font-bold text-right">Award Count</th>
+                    <th className="px-4 py-3 font-bold text-right">Contracted Value</th>
+                    <th className="px-4 py-3 font-bold text-right">Volume Share</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {org.topVendors.map((v) => (
-                    <tr key={v.vendor} className="border-t border-neutral-100">
-                      <td className="px-3 py-2">{displayVendor(v.vendor)}</td>
-                      <td className="px-3 py-2 text-right tabular-nums">{v.awards}</td>
-                      <td className="px-3 py-2 text-right tabular-nums">
+                  {org.topVendors.map((v, i) => (
+                    <tr
+                      key={v.vendor}
+                      className={`border-t-[1.5px] border-charcoal/10 transition-colors hover:bg-orange/5 ${
+                        i % 2 === 0 ? "bg-white" : "bg-beige/40"
+                      }`}
+                    >
+                      <td className="px-4 py-3 font-medium text-charcoal">{displayVendor(v.vendor)}</td>
+                      <td className="px-4 py-3 text-right tabular-nums font-mono text-concrete">{v.awards}</td>
+                      <td className="px-4 py-3 text-right tabular-nums font-mono font-semibold text-charcoal">
                         {formatInr(v.totalValue)}
                       </td>
-                      <td className="px-3 py-2 text-right tabular-nums">
+                      <td className="px-4 py-3 text-right tabular-nums font-mono font-bold text-orange">
                         {pct(v.shareOfValue)}
                       </td>
                     </tr>
@@ -156,7 +164,7 @@ export default async function OrganisationPage({
               </table>
             </div>
           )}
-          <p className="text-xs text-neutral-500 leading-relaxed bg-neutral-50 border border-neutral-200 rounded p-3">
+          <p className="text-xs text-concrete font-mono leading-relaxed bg-beige-alt border border-charcoal/10 rounded-xl p-3.5">
             {org.caveat}
           </p>
         </section>

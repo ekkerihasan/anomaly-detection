@@ -11,16 +11,16 @@ import { ReviewStatus } from "@/types/award";
 const PAGE_SIZE = 50;
 
 const STATUS_PILL: Record<ReviewStatus, string> = {
-  open: "bg-neutral-100 text-neutral-700",
-  reviewing: "bg-blue-100 text-blue-800",
-  referred: "bg-red-100 text-red-800",
-  dismissed: "bg-neutral-100 text-neutral-400 line-through",
+  open: "neo-badge neo-badge-ghost",
+  reviewing: "neo-badge bg-concrete text-white",
+  referred: "neo-badge neo-badge-orange",
+  dismissed: "neo-badge bg-beige-dark text-concrete line-through",
 };
 
 function scoreColor(score: number): string {
-  if (score >= 1.8) return "text-red-700";
-  if (score >= 1.0) return "text-orange-600";
-  return "text-neutral-700";
+  if (score >= 1.8) return "text-white bg-orange";
+  if (score >= 1.0) return "text-charcoal bg-beige-dark font-bold";
+  return "text-charcoal bg-beige-alt";
 }
 
 export default async function AwardsPage({
@@ -54,15 +54,15 @@ export default async function AwardsPage({
     return (
       <>
         <SyntheticBanner />
-        <main className="max-w-2xl mx-auto p-10 text-center flex flex-col gap-3">
-          <h1 className="text-xl font-semibold">API unreachable</h1>
-          <p className="text-neutral-600 text-sm">
-            The ranked list is served by the FastAPI app. Start it with{" "}
-            <code className="bg-neutral-100 px-1.5 py-0.5 rounded font-mono text-xs">
-              uvicorn app.main:app --reload
-            </code>{" "}
-            from <code className="font-mono text-xs">api/</code>, then reload.
-          </p>
+        <main className="max-w-3xl mx-auto p-10 text-center flex flex-col gap-5 items-center">
+          <div className="neo-card p-8 flex flex-col gap-3 items-center bg-white">
+            <span className="text-3xl text-orange">⚠</span>
+            <h1 className="text-xl font-bold text-charcoal">API Unreachable</h1>
+            <p className="text-concrete text-sm max-w-md">
+              The ranked list is served by the FastAPI app. Ensure it is running
+              at <code className="font-mono text-xs font-bold text-charcoal">localhost:8000</code>, then reload this page.
+            </p>
+          </div>
         </main>
       </>
     );
@@ -82,17 +82,28 @@ export default async function AwardsPage({
   return (
     <>
       <SyntheticBanner />
-      <main className="max-w-7xl mx-auto w-full flex flex-col gap-5 p-6">
-        <header className="flex flex-col gap-1">
-          <h1 className="text-2xl font-bold">Review queue</h1>
-          <p className="text-neutral-600 text-sm">
-            {list.total.toLocaleString("en-IN")} awards carry at least one flag,
-            ranked by composite risk score. Read from the top: the rank, not
-            the presence of a flag, is the signal. Awards with no flags are not
-            listed.
+      <main className="max-w-7xl mx-auto w-full flex flex-col gap-6 p-5 md:p-8">
+        {/* ── Header ── */}
+        <header className="flex flex-col gap-2">
+          <div className="flex flex-wrap items-center gap-3">
+            <h1 className="text-2xl md:text-3xl font-bold text-charcoal tracking-tight">
+              Audit Review Queue
+            </h1>
+            <span className="neo-badge neo-badge-dark">
+              {list.total.toLocaleString("en-IN")} FLAGGED AWARDS
+            </span>
+            <span className="neo-badge neo-badge-ghost text-xs">
+              GFR 2017 & CVC RULES
+            </span>
+          </div>
+          <p className="text-sm text-concrete max-w-3xl leading-relaxed">
+            Every tender award below triggered at least one statutory procurement red flag.
+            Awards are ranked in descending order of composite deviation score — begin review from
+            the top of the list.
           </p>
         </header>
 
+        {/* ── Filters ── */}
         <AwardFilters
           organisations={orgs?.organisations ?? []}
           current={{
@@ -106,70 +117,76 @@ export default async function AwardsPage({
           }}
         />
 
+        {/* ── Table ── */}
         {list.awards.length === 0 ? (
-          <div className="border border-dashed border-neutral-300 rounded-lg p-10 text-center text-neutral-500">
-            <p className="font-medium">No awards match these filters.</p>
-            <p className="text-sm mt-1">
-              Widen the value band or clear the flag filter.
+          <div className="neo-card-static p-10 text-center flex flex-col gap-2 items-center bg-white">
+            <span className="text-3xl">🔍</span>
+            <p className="font-bold text-charcoal">No awards match these filter criteria.</p>
+            <p className="text-sm text-concrete">
+              Try widening the value band or clearing the selected flag filter.
             </p>
           </div>
         ) : (
-          <div className="overflow-x-auto border border-neutral-200 rounded-lg">
+          <div className="neo-table-wrap overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-neutral-50 text-left text-xs uppercase tracking-wide text-neutral-500">
-                <tr>
-                  <th className="px-3 py-2 font-medium">Rank</th>
-                  <th className="px-3 py-2 font-medium">Score</th>
-                  <th className="px-3 py-2 font-medium">Organisation</th>
-                  <th className="px-3 py-2 font-medium">Vendor</th>
-                  <th className="px-3 py-2 font-medium text-right">Value</th>
-                  <th className="px-3 py-2 font-medium">Date</th>
-                  <th className="px-3 py-2 font-medium">Flags</th>
-                  <th className="px-3 py-2 font-medium">Status</th>
+              <thead>
+                <tr className="bg-charcoal text-beige text-left text-xs uppercase tracking-wider font-mono">
+                  <th className="px-4 py-3 font-bold">Rank</th>
+                  <th className="px-4 py-3 font-bold">Risk Score</th>
+                  <th className="px-4 py-3 font-bold">Organisation</th>
+                  <th className="px-4 py-3 font-bold">Vendor</th>
+                  <th className="px-4 py-3 font-bold text-right">Value (₹)</th>
+                  <th className="px-4 py-3 font-bold">Date</th>
+                  <th className="px-4 py-3 font-bold">Flags</th>
+                  <th className="px-4 py-3 font-bold">Status</th>
                 </tr>
               </thead>
               <tbody>
-                {list.awards.map((a) => (
+                {list.awards.map((a, i) => (
                   <tr
                     key={a.id}
-                    className="border-t border-neutral-100 hover:bg-amber-50/60 transition-colors"
+                    className={`border-t-[1.5px] border-charcoal/10 transition-colors hover:bg-orange/5 ${
+                      i % 2 === 0 ? "bg-white" : "bg-beige/40"
+                    }`}
                   >
-                    <td className="px-3 py-2 tabular-nums text-neutral-500">#{a.rank}</td>
-                    <td className={`px-3 py-2 font-bold tabular-nums ${scoreColor(a.score)}`}>
-                      {a.score.toFixed(2)}
+                    <td className="px-4 py-3 font-mono font-bold text-concrete tabular-nums">
+                      #{a.rank}
                     </td>
-                    <td className="px-3 py-2">
+                    <td className="px-4 py-3">
+                      <span className={`neo-badge font-mono ${scoreColor(a.score)}`}>
+                        {a.score.toFixed(2)}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
                       <Link
                         href={`/awards/${a.id}`}
-                        className="font-medium text-blue-800 hover:underline"
+                        className="font-semibold text-charcoal hover:text-orange transition-colors underline decoration-1 underline-offset-2 decoration-charcoal/20 hover:decoration-orange"
                       >
                         {formatOrganisation(a.organisation)}
                       </Link>
                     </td>
-                    <td className="px-3 py-2 text-neutral-700">{displayVendor(a.vendor)}</td>
-                    <td className="px-3 py-2 text-right tabular-nums">
+                    <td className="px-4 py-3 text-concrete text-sm">{displayVendor(a.vendor)}</td>
+                    <td className="px-4 py-3 text-right font-mono tabular-nums font-semibold text-charcoal">
                       {a.contractValue !== null ? formatInr(a.contractValue) : "—"}
                     </td>
-                    <td className="px-3 py-2 text-neutral-600 whitespace-nowrap">
+                    <td className="px-4 py-3 text-concrete whitespace-nowrap font-mono text-xs">
                       {a.contractDate ? formatDate(a.contractDate) : "—"}
                     </td>
-                    <td className="px-3 py-2">
+                    <td className="px-4 py-3">
                       <div className="flex flex-wrap gap-1">
                         {a.flagCodes.map((c) => (
                           <span
                             key={c}
                             title={c}
-                            className="bg-neutral-200 text-neutral-800 rounded px-1.5 py-0.5 text-xs whitespace-nowrap"
+                            className="neo-badge neo-badge-warm text-[0.65rem]"
                           >
                             {flagLabel(c)}
                           </span>
                         ))}
                       </div>
                     </td>
-                    <td className="px-3 py-2">
-                      <span
-                        className={`rounded-full px-2 py-0.5 text-xs capitalize ${STATUS_PILL[a.reviewStatus]}`}
-                      >
+                    <td className="px-4 py-3">
+                      <span className={`${STATUS_PILL[a.reviewStatus]} text-[0.65rem] capitalize`}>
                         {a.reviewStatus}
                       </span>
                     </td>
@@ -180,26 +197,27 @@ export default async function AwardsPage({
           </div>
         )}
 
+        {/* ── Pagination ── */}
         {pageCount > 1 && (
-          <nav className="flex items-center justify-between text-sm">
-            <span className="text-neutral-500">
+          <nav className="flex items-center justify-between pt-2">
+            <span className="text-sm font-mono font-bold text-concrete">
               Page {page} of {pageCount.toLocaleString("en-IN")}
             </span>
             <div className="flex gap-2">
               {page > 1 && (
                 <Link
                   href={qs({ page: String(page - 1) })}
-                  className="border border-neutral-300 rounded px-3 py-1 hover:bg-neutral-50"
+                  className="neo-btn-ghost text-sm py-2 px-4"
                 >
-                  Previous
+                  ← Previous
                 </Link>
               )}
               {page < pageCount && (
                 <Link
                   href={qs({ page: String(page + 1) })}
-                  className="border border-neutral-300 rounded px-3 py-1 hover:bg-neutral-50"
+                  className="neo-btn-ghost text-sm py-2 px-4"
                 >
-                  Next
+                  Next →
                 </Link>
               )}
             </div>

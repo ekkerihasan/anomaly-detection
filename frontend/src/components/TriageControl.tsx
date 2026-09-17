@@ -5,10 +5,10 @@ import { ReviewStatus, ALL_REVIEW_STATUSES } from "@/types/award";
 import { API_BASE } from "@/lib/api";
 
 const STATUS_STYLES: Record<ReviewStatus, string> = {
-  open: "bg-neutral-100 text-neutral-800 border-neutral-300",
-  reviewing: "bg-blue-100 text-blue-800 border-blue-300",
-  referred: "bg-red-100 text-red-800 border-red-300",
-  dismissed: "bg-neutral-100 text-neutral-500 border-neutral-300 line-through",
+  open: "neo-badge neo-badge-ghost cursor-pointer",
+  reviewing: "neo-badge bg-concrete text-white cursor-pointer",
+  referred: "neo-badge neo-badge-orange cursor-pointer",
+  dismissed: "neo-badge bg-beige-dark text-concrete line-through cursor-pointer",
 };
 
 type SaveState = "idle" | "saving" | "saved" | "error";
@@ -22,17 +22,13 @@ export default function TriageControl({
   awardId: number;
   initialStatus: ReviewStatus;
   initialNote: string | null;
-  /** Design-reference mode (/awards/demo): interactive, but never writes.
-   *  Without this the demo card would PUT triage state onto a real award. */
+  /** Design-reference mode (/awards/demo): interactive, but never writes. */
   readOnly?: boolean;
 }) {
   const [status, setStatus] = useState<ReviewStatus>(initialStatus);
   const [note, setNote] = useState(initialNote ?? "");
   const [save, setSave] = useState<SaveState>("idle");
 
-  // Persists to PUT /awards/:id/review. The triage state lives in Postgres,
-  // not in component state -- a queue that forgets what you referred is not
-  // an audit tool.
   async function persist(nextStatus: ReviewStatus, nextNote: string) {
     if (readOnly) return;
     setSave("saving");
@@ -54,32 +50,43 @@ export default function TriageControl({
   }
 
   return (
-    <div className="border border-neutral-200 rounded-lg p-4 flex flex-col gap-3">
+    <div className="neo-card p-5 flex flex-col gap-4 bg-white">
       <div className="flex items-center justify-between">
-        <span className="font-semibold text-sm text-neutral-700">Triage</span>
+        <div className="flex items-center gap-2">
+          <span className="font-bold text-sm text-charcoal uppercase font-mono tracking-wide">
+            Auditor Triage Status
+          </span>
+          {readOnly && (
+            <span className="neo-badge neo-badge-beige text-[0.6rem]">Demo Mode</span>
+          )}
+        </div>
         <span
-          className="text-xs h-4"
+          className="text-xs font-mono font-bold h-4"
           aria-live="polite"
           role="status"
         >
-          {save === "saving" && <span className="text-neutral-400">Saving…</span>}
-          {save === "saved" && <span className="text-green-700">Saved</span>}
+          {save === "saving" && <span className="text-concrete">Saving…</span>}
+          {save === "saved" && <span className="text-orange">Saved</span>}
           {save === "error" && (
-            <span className="text-red-700">Could not save — is the API running?</span>
+            <span className="text-red-700">Could not save — check API server</span>
           )}
         </span>
       </div>
 
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2.5">
         {ALL_REVIEW_STATUSES.map((s) => (
           <button
             key={s}
             type="button"
             onClick={() => onStatus(s)}
             aria-pressed={status === s}
-            className={`px-3 py-1 rounded-full border text-sm capitalize transition-colors ${
+            className={`px-3.5 py-1.5 rounded-lg border-2 text-xs font-bold uppercase tracking-wide font-mono transition-all ${
               STATUS_STYLES[s]
-            } ${status === s ? "ring-2 ring-offset-1 ring-neutral-500" : "opacity-60 hover:opacity-100"}`}
+            } ${
+              status === s
+                ? "ring-2 ring-orange ring-offset-1 shadow-[3px_3px_0px_#242424]"
+                : "opacity-60 hover:opacity-100"
+            }`}
           >
             {s}
           </button>
@@ -93,13 +100,13 @@ export default function TriageControl({
           setSave("idle");
         }}
         onBlur={() => void persist(status, note)}
-        placeholder="Reviewer note…"
-        rows={2}
-        className="border border-neutral-200 rounded p-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-neutral-400"
+        placeholder="Record official audit notes or justification here…"
+        rows={3}
+        className="neo-input text-sm resize-none"
       />
 
-      <p className="text-xs text-neutral-400">
-        This is an auditor&apos;s queue, not a verdict.
+      <p className="text-xs text-concrete font-mono">
+        Official auditor queue state — transitions and notes are saved directly to audit history.
       </p>
     </div>
   );

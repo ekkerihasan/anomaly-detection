@@ -1,37 +1,313 @@
 @import "tailwindcss";
 
-/* This app is pinned to a light theme on purpose.
- *
- * Every screen is built in explicit light colours (bg-white, neutral-50
- * panels, neutral-700 body text). The Next.js starter's
- * prefers-color-scheme:dark block used to flip only the <body> background
- * to near-black underneath those components, which left mid-grey text on a
- * black ground -- illegible, and silently different depending on the
- * presenter's OS setting.
- *
- * MHASH26-BUILD-PLAN.md Section 10 makes legibility at video resolution a
- * non-negotiable, and the demo gets screen-recorded on someone's laptop
- * (Section 11, H40-H48). A deterministic light render on every machine is
- * worth more here than honouring the system theme. `color-scheme: light`
- * also keeps form controls -- the date and select inputs in the filter bar
- * -- from rendering dark-on-dark.
- */
+/* ==========================================================================
+   Anomaly Detection — Neo-Brutalist Design System
+   Editorial Palette:
+     • Charcoal (#242424 / #2B2B2B) - Structure, text, borders, hard shadows
+     • Concrete Gray (#767676 / #A8A39D) - Secondary typography, metadata
+     • Off-White / Warm Beige (#F6F3EE / #ECE6DE) - Canvas & surfaces
+     • Burnt Terracotta Orange (#DE6426 / #C65319) - Primary accent & highlights
+   ========================================================================== */
+
 :root {
   color-scheme: light;
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #F6F3EE;
+  --foreground: #242424;
+
+  /* Charcoal tones (not pure black) */
+  --charcoal: #242424;
+  --charcoal-soft: #383838;
+  --charcoal-light: #4A4A4A;
+
+  /* Concrete grays */
+  --concrete: #767676;
+  --concrete-light: #A8A39D;
+  --concrete-border: #D1CCC6;
+
+  /* Beige / off-white paper canvas */
+  --beige: #F6F3EE;
+  --beige-alt: #ECE6DE;
+  --beige-dark: #DDD7CF;
+
+  /* Warm burnt orange accent */
+  --orange: #DE6426;
+  --orange-dark: #C65319;
+  --orange-light: #F08E59;
+  --orange-subtle: #FDF1EA;
+
+  --white: #FFFFFF;
+  --border: #242424;
+
+  /* Aliases for backwards compatibility */
+  --ink: var(--charcoal);
+  --ink-soft: var(--charcoal-soft);
+  --paper: var(--beige);
+  --paper-alt: var(--beige-alt);
+  --flame: var(--orange);
+  --citron: var(--beige-dark);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --color-charcoal: var(--charcoal);
+  --color-charcoal-soft: var(--charcoal-soft);
+  --color-charcoal-light: var(--charcoal-light);
+  --color-concrete: var(--concrete);
+  --color-concrete-light: var(--concrete-light);
+  --color-concrete-border: var(--concrete-border);
+  --color-beige: var(--beige);
+  --color-beige-alt: var(--beige-alt);
+  --color-beige-dark: var(--beige-dark);
+  --color-orange: var(--orange);
+  --color-orange-dark: var(--orange-dark);
+  --color-orange-light: var(--orange-light);
+  --color-orange-subtle: var(--orange-subtle);
+  --color-neo-border: var(--border);
+
+  /* Aliases */
+  --color-ink: var(--charcoal);
+  --color-ink-soft: var(--charcoal-soft);
+  --color-paper: var(--beige);
+  --color-paper-alt: var(--beige-alt);
+  --color-flame: var(--orange);
+
+  --font-sans: var(--font-space-grotesk);
   --font-mono: var(--font-geist-mono);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system,
-    "Segoe UI", Arial, sans-serif;
+  font-family: var(--font-space-grotesk), ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+/* ── Subtle Architectural Background Patterns ── */
+.neo-grid-bg {
+  background-image:
+    linear-gradient(rgba(36, 36, 36, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(36, 36, 36, 0.045) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+.neo-dot-bg {
+  background-image: radial-gradient(circle, rgba(36, 36, 36, 0.07) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* ── Neo-Brutalist Cards ── */
+.neo-card {
+  border: 2.5px solid var(--border);
+  border-radius: 12px;
+  background: white;
+  box-shadow: 5px 5px 0px var(--charcoal);
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+.neo-card:hover {
+  box-shadow: 7px 7px 0px var(--charcoal);
+  transform: translate(-1px, -1px);
+}
+
+.neo-card-static {
+  border: 2.5px solid var(--border);
+  border-radius: 12px;
+  background: white;
+  box-shadow: 5px 5px 0px var(--charcoal);
+}
+
+.neo-card-orange {
+  border: 2.5px solid var(--border);
+  border-radius: 12px;
+  background: white;
+  box-shadow: 5px 5px 0px var(--orange);
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+.neo-card-orange:hover {
+  box-shadow: 7px 7px 0px var(--orange);
+  transform: translate(-1px, -1px);
+}
+
+.neo-card-beige {
+  border: 2.5px solid var(--border);
+  border-radius: 12px;
+  background: var(--beige-alt);
+  box-shadow: 5px 5px 0px var(--charcoal);
+}
+
+.neo-card-subtle {
+  border: 2.5px solid var(--border);
+  border-radius: 12px;
+  background: white;
+  box-shadow: 4px 4px 0px var(--beige-dark);
+}
+
+/* ── Buttons ── */
+.neo-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border: 2.5px solid var(--border);
+  border-radius: 10px;
+  background: var(--orange);
+  color: white;
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: 0.01em;
+  box-shadow: 4px 4px 0px var(--charcoal);
+  transition: all 0.12s ease;
+  cursor: pointer;
+  text-decoration: none;
+}
+.neo-btn:hover {
+  background: var(--orange-dark);
+  box-shadow: 5px 5px 0px var(--charcoal);
+  transform: translate(-0.5px, -0.5px);
+}
+.neo-btn:active {
+  box-shadow: 1px 1px 0px var(--charcoal);
+  transform: translate(2px, 2px);
+}
+
+.neo-btn-dark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border: 2.5px solid var(--border);
+  border-radius: 10px;
+  background: var(--charcoal);
+  color: var(--beige);
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: 0.01em;
+  box-shadow: 4px 4px 0px var(--orange);
+  transition: all 0.12s ease;
+  cursor: pointer;
+  text-decoration: none;
+}
+.neo-btn-dark:hover {
+  background: var(--charcoal-soft);
+  box-shadow: 5px 5px 0px var(--orange);
+  transform: translate(-0.5px, -0.5px);
+}
+.neo-btn-dark:active {
+  box-shadow: 1px 1px 0px var(--orange);
+  transform: translate(2px, 2px);
+}
+
+.neo-btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border: 2.5px solid var(--border);
+  border-radius: 10px;
+  background: white;
+  color: var(--charcoal);
+  font-weight: 600;
+  font-size: 0.9rem;
+  box-shadow: 3px 3px 0px var(--charcoal);
+  transition: all 0.12s ease;
+  cursor: pointer;
+  text-decoration: none;
+}
+.neo-btn-ghost:hover {
+  background: var(--beige-alt);
+  box-shadow: 4px 4px 0px var(--charcoal);
+  transform: translate(-0.5px, -0.5px);
+}
+.neo-btn-ghost:active {
+  box-shadow: 1px 1px 0px var(--charcoal);
+  transform: translate(2px, 2px);
+}
+
+/* ── Badges ── */
+.neo-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border: 2px solid var(--border);
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  box-shadow: 2px 2px 0px var(--charcoal);
+}
+
+.neo-badge-orange {
+  background: var(--orange);
+  color: white;
+}
+.neo-badge-dark {
+  background: var(--charcoal);
+  color: var(--beige);
+}
+.neo-badge-ghost {
+  background: white;
+  color: var(--charcoal);
+}
+.neo-badge-concrete {
+  background: var(--concrete);
+  color: white;
+}
+.neo-badge-beige {
+  background: var(--beige-alt);
+  color: var(--charcoal);
+}
+.neo-badge-warm {
+  background: var(--orange-subtle);
+  color: var(--orange-dark);
+}
+
+/* ── Inputs ── */
+.neo-input {
+  border: 2.5px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 0.875rem;
+  background: white;
+  color: var(--charcoal);
+  box-shadow: 3px 3px 0px var(--charcoal);
+  transition: box-shadow 0.12s ease;
+  outline: none;
+}
+.neo-input:focus {
+  box-shadow: 4px 4px 0px var(--orange);
+}
+
+/* ── Dividers ── */
+.neo-divider {
+  border: none;
+  border-top: 2.5px solid var(--border);
+  margin: 0;
+}
+
+/* ── Table Styling ── */
+.neo-table-wrap {
+  border: 2.5px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 6px 6px 0px var(--charcoal);
+  background: white;
+}
+
+/* ── Scrollbars ── */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--concrete);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-track {
+  background: var(--beige-alt);
 }
